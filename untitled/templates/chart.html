@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.99.0/css/materialize.min.css">
+
+        <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.99.0/js/materialize.min.js"></script>
+
+        <script language="JavaScript" type="text/javascript">
+
+
+            function mapChartData (res) {
+                // res : result array from getAggData and getExecQuery
+                var serArr = [];
+                for (var c in res[0]) {
+                    if (Object.prototype.hasOwnProperty.call(res[0], c)) {
+                        if (typeof res[0][c] != "string")
+                        {
+                            // maintain id to map with server response - static
+                            // maintain name to give flexibility to the user - variable
+                            serArr.push({
+                                id: c,
+                                name: c,
+                                data: []
+                            })
+                        } else
+                        {
+                            var category = c
+                        }
+                    }
+                }
+                // fill the series data
+
+                for( var i =0; i < res.length; i++)
+                {
+                    for ( var j =0; j < serArr.length; j++)
+                    {
+                        serArr[j].data.push({
+                            name: res[i][category],
+                            y: parseFloat(res[i][serArr[j].id])
+                        })
+                    }
+                }
+                return(serArr);
+            }
+
+
+            function generateChart() {
+                var query = document.getElementById("query").value;
+                $.ajax ({
+                    url: '/test?&query=' + query,
+                    datatype: "json",
+                    async: false,
+                    contentType: "application/json; charset=utf-8",
+                    success: function (e) {
+                        var series_array = mapChartData(e);
+                        // Success callback
+                        $('#container').highcharts({
+                            chart: {
+                                type: 'line'
+                            },
+                            title: {
+                                text: ''
+                            },
+                            xAxis: {
+                                type: 'category'
+                            },
+                            series: series_array
+                        });
+                    }
+                });
+            }
+            $(document).ready(function() {
+                $('select').material_select();
+            });
+            function changeType() {
+                var chart =  $('#container').highcharts();
+                $.each(chart.series, function (key, series) {
+                    series.update(
+                        {type: document.getElementById("chart_type").value}
+                    );
+                });
+            }
+        </script>
+    </head>
+	<body>
+        <div>
+            <div class="input-field container">
+                <textarea class="materialize-textarea" name="query" rows="4" cols="50" id="query"></textarea>
+                <label for="query">Query</label>
+            </div>
+            <br>
+            <div class="container">
+                <a class="waves-effect waves-light btn" onclick="generateChart()"> Execute Query </a>
+            </div>
+            <br>
+            <div class="input-field col s6 container">
+                <select id="chart_type" onchange="changeType()">
+                    <option value="" disabled>Chart Type</option>
+                    <option value="line"  selected>Line Chart</option>
+                    <option value="area">Area Chart</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="column">Column Chart</option>
+                    <option value="spline">Spline Chart</option>
+                    <option value="areaspline">Area-Spline Chart</option>
+                    <option value="scatter">Scatter Plot</option>
+                </select>
+                <label>Select Chart Type</label>
+            </div>
+            <div class="col s6"></div>
+        </div>
+		<div id="container" style="width: 70%; height: 70%; margin: 0 auto"></div>
+	</body>
+</html>

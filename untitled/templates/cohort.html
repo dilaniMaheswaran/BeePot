@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cohort Table</title>
+    <link rel="stylesheet" type="text/css" href="/static/cornelius.css" />
+    <script type="text/javascript" src="/static/cornelius.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script language="JavaScript" type="text/javascript">
+        $(document).ready(function() {
+            $.ajax ({
+                url: '/draw/',
+                datatype: "json",
+                async: false,
+                contentType: "application/json; charset=utf-8",
+                success: function (e) {
+                    // Success callback
+                    var values = [],
+                    data_array = [],
+
+                    // The initial date is the date displayed
+                    // in the first column of the first row
+                    initialDate = new Date(e[0]["month"][1], e[0]["month"][0] - 1);
+
+                    while (e.length > 0)
+                    {
+                        for (var i=0; i < e.length; i++)
+                        {
+                            values.push(e[i]['sum'])
+                        }
+                        data_array.push(values);
+                        values = [];
+                        e.shift()
+                    }
+                    console.log(values);
+{#                    var data = [#}
+{#                        [1973,1000,750,300,400,70,20],#}
+{#                        [1268,549,336,221,122,115],#}
+{#                        [1892,1282,250,32,18],#}
+{#                        [1832,379,254,314],#}
+{#                        [1171,256,120],#}
+{#                        [2533,340]#}
+{#                    ],#}
+                    var data = data_array,
+
+                    // DOM Element where the Cohort Chart will be inserted
+                    container = document.getElementById('container');
+
+                    Cornelius.draw({
+                    initialDate: initialDate,
+                    container: container,
+                    cohort: data,
+                    title: ''
+                    });
+                }});
+        });
+    </script>
+</body>
+</html>
